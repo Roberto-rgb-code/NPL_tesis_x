@@ -34,17 +34,28 @@ elif auth_method == "API Key":
 
 # ---- Carga de datos ----
 st.sidebar.header("Carga de datos")
-archivo = st.sidebar.file_uploader("Sube tu JSON de tuits", type=["json"])
+file_type = st.sidebar.selectbox("Selecciona el tipo de archivo", ["CSV", "Excel", "JSON"])
+data_file = st.sidebar.file_uploader(f"Sube tu archivo {file_type}", type=["csv", "xlsx", "xls", "json"])
 
-if archivo:
+if data_file:
     try:
-        df = pd.read_json(archivo)
+        if file_type == "CSV":
+            df = pd.read_csv(data_file)
+        elif file_type == "Excel":
+            df = pd.read_excel(data_file)
+        elif file_type == "JSON":
+            df = pd.read_json(data_file)
+        else:
+            st.error("Tipo de archivo no soportado. Por favor, selecciona CSV, Excel o JSON.")
+            st.stop()
+        
+        # Verificar columna 'Text'
         if 'Text' not in df.columns:
-            st.error("El JSON no contiene la columna 'Text'.")
+            st.error("El archivo no contiene la columna 'Text'.")
             st.stop()
         st.success(f"Datos cargados: {len(df)} registros")
     except Exception as e:
-        st.error(f"Error al cargar el archivo: {e}")
+        st.error(f"Error al cargar el archivo: {str(e)}. Asegúrate de que tenga la estructura correcta.")
         st.stop()
     
     # Selección de la fila a analizar
@@ -293,4 +304,4 @@ if archivo:
             )
             st.stop()
 else:
-    st.info("Por favor, sube un archivo JSON para comenzar.")
+    st.info("Por favor, sube un archivo CSV, Excel o JSON para comenzar.")
